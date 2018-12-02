@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 
 public class Main {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-    public static void main(final String[] args) {
-        Main.LOGGER.debug("My Application uses SLF4J");
-    }
+  public static void main(final String[] args) {
+    Main.LOGGER.debug("My Application uses SLF4J");
+  }
 }
