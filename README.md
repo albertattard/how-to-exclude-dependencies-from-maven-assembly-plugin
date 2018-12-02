@@ -1,3 +1,17 @@
+Any dependencies that are already available at the runtime environment can be given the scope of `provided` as highlighted below.
+
+```xml
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.8.0-beta2</version>
+      <scope>provided</scope>
+    </dependency>
+```
+
+The SLF4J ([Homepage](https://www.slf4j.org/)) will not be included by the `maven-assembly-plugin` plugin in the final JAR, as this dependency is marked as `provided`.  The complete XML is shown next for completeness.
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -100,7 +114,7 @@
         <configuration>
           <!-- Sets the VM argument line used when unit tests are run. -->
           <argLine>${surefireArgLine}</argLine>
-          <!-- Skips unit tests if the value of skip.unit.tests property 
+          <!-- Skips unit tests if the value of skip.unit.tests property
             is true -->
           <skipTests>${skip.unit.tests}</skipTests>
         </configuration>
@@ -111,7 +125,7 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
-          <!-- Prepares the property pointing to the JaCoCo runtime agent 
+          <!-- Prepares the property pointing to the JaCoCo runtime agent
             which is passed as VM argument when Maven the Surefire plugin is executed. -->
           <execution>
             <id>pre-unit-test</id>
@@ -119,15 +133,15 @@
               <goal>prepare-agent</goal>
             </goals>
             <configuration>
-              <!-- Sets the path to the file which contains the execution 
+              <!-- Sets the path to the file which contains the execution
                 data. -->
               <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-              <!-- Sets the name of the property containing the settings 
+              <!-- Sets the name of the property containing the settings
                 for JaCoCo runtime agent. -->
               <propertyName>surefireArgLine</propertyName>
             </configuration>
           </execution>
-          <!-- Ensures that the code coverage report for unit tests is created 
+          <!-- Ensures that the code coverage report for unit tests is created
             after unit tests have been run. -->
           <execution>
             <id>post-unit-test</id>
@@ -136,7 +150,7 @@
               <goal>report</goal>
             </goals>
             <configuration>
-              <!-- Sets the path to the file which contains the execution 
+              <!-- Sets the path to the file which contains the execution
                 data. -->
               <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
               <!-- Sets the output directory for the code coverage report. -->
@@ -179,3 +193,43 @@
     </plugins>
   </reporting>
 </project>
+```
+
+The application can be built by Maven ([Homepage](https://maven.apache.org/)) into a single JAR (referred to as FAT JAR ([Plugin](http://maven.apache.org/plugins/maven-assembly-plugin/))).  This application makes use of SLF4J as shown in the following fragment.
+
+```java
+package com.javacreed.examples.maven;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Main {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+    public static void main(final String[] args) {
+        Main.LOGGER.debug("My Application uses SLF4J");
+    }
+}
+```
+
+This application can be ran using the following command
+
+```
+$ java -jar Application.jar
+```
+
+Unfortunately, this application will fail to run as it is missing the SLF4J library, which was excluded on purpose.
+
+```
+Exception in thread "main" java.lang.NoClassDefFoundError: org/slf4j/LoggerFactory
+    at com.javacreed.examples.maven.Main.<clinit>(Main.java:8)
+Caused by: java.lang.ClassNotFoundException: org.slf4j.LoggerFactory
+    at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+    at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+    at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+    at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+    ... 1 more
+```
+
+If you want to run this application, then you need to change the dependency scope.  The code listed above is available at [https://github.com/javacreed/how-to-exclude-dependencies-from-maven-assembly-plugin](https://github.com/javacreed/how-to-exclude-dependencies-from-maven-assembly-plugin).
